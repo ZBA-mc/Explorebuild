@@ -16,7 +16,7 @@ A Minecraft-style sandbox game implemented in Python, featuring Faithful 64x tex
   - Player-object interactions  
   - Mob AI and behavior logic  
   - Enhanced map generation and performance tuning
-
+## Install dependencies
 ```shell
-pip install ursina perlin-noise
+pip install ursina perlin-noise numpy
 ```
