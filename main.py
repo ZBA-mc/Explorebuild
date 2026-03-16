@@ -1,202 +1,264 @@
-from ursina import *
-from ursina.prefabs.first_person_controller import FirstPersonController
+import pyglet
+from pyglet.window import key, mouse
+import pyglet.gl as gl
 from perlin_noise import PerlinNoise
-import random
 import numpy as np
-from ursina.scene import Scene
+import random
+import math
 
+WINDOW_SIZE = (900, 600)
+BLOCK_SIZE = 1.0
+CHUNK_SIZE = 32
+BLOCK_TYPES = [
+    {"name": "grass", "color": (0.4, 1.0, 0.4)},   # RGB
+    {"name": "stone", "color": (0.6, 0.6, 0.6)},
+    {"name": "dirt", "color": (0.7, 0.5, 0.3)},
+    {"name": "bedrock", "color": (0.25, 0.25, 0.25)},
+]
 
-def perturb_perlin_value(original_noise_val, perturb_strength=0.05):
-    perturbed_val = original_noise_val + random.uniform(-perturb_strength, perturb_strength)
-    perturbed_val = np.clip(perturbed_val, -1.0, 1.0)
-    return perturbed_val
+class Camera:
+    def __init__(self, pos, pitch=0.0, yaw=0.0):
+        self.pos = np.array(pos, dtype="float32")
+        self.pitch = pitch
+        self.yaw = yaw
+        self.speed = 0.08
+        self.sensitivity = 0.2
 
-def toggle_pause(is_paused):
-    pause_menu.enabled = is_paused
-    mouse.locked = not is_paused
-    mouse.visible = is_paused
-    player.enabled = not is_paused
-    application.paused = is_paused
+    def get_direction(self):
+        pitch_rad = math.radians(self.pitch)
+        yaw_rad = math.radians(self.yaw)
+        x = -math.sin(yaw_rad) * math.cos(pitch_rad)
+        y = math.sin(pitch_rad)
+        z = -math.cos(yaw_rad) * math.cos(pitch_rad)
+        return np.array([x, y, z], dtype="float32")
 
-app = Ursina()
-
-# 纹理/音效加载
-grass_texture = load_texture('assets/textures/block/grass_block.png')
-stone_texture = load_texture('assets/textures/block/stone.png')
-dirt_texture = load_texture('assets/textures/block/dirt.png')
-bedrock_texture = load_texture('assets/textures/block/bedrock.png')
-arm_texture = load_texture('assets/textures/entity/arm_texture.png')
-punch_sound = Audio('assets/sounds/punch_sound.wav', loop=False, autoplay=False)
-block_pick = 1
-
-# 窗口设置
-window.fps_counter.x = -0.88
-window.fps_counter.y = 0.47
-window.collider_counter.x = -0.88
-window.collider_counter.y = 0.43
-window.entity_counter.x = -0.88
-window.entity_counter.y = 0.39
-window.fps_counter.enabled = False
-window.collider_counter.enabled = False
-window.entity_counter.enabled = False
-window.exit_button.visible = False
-
-scene.fog_color = color.white
-scene.fog_density = 0
-
-coord_display = Text(
-    parent=camera.ui,
-    text="X: 0.00 Y: 0.00 Z: 0.00",
-    position=(-0.88, 0.35),  # 放在计数器下方
-    size=0.025,
-    color=color.white,
-    enabled=False  # 初始隐藏
-)
-
-# 输入处理
-def input(key):
-    if key == 'escape':
-        toggle_pause(not pause_menu.enabled)
-
-    if key == 'f3':
-        coord_display.enabled = not coord_display.enabled
-        window.collider_counter.enabled = not window.collider_counter.enabled
-        window.entity_counter.enabled = not window.entity_counter.enabled
-        window.fps_counter.enabled = not window.fps_counter.enabled
-
-    if key == 'f':
-        if scene.fog_density == 0:
-            scene.fog_density = 0.04
-        else:
-            scene.fog_density = 0
-
-
-def update():
-    global block_pick
-    if held_keys['1']: block_pick = 1
-    if held_keys['2']: block_pick = 2
-    if held_keys['3']: block_pick = 3
-    if held_keys['4']: block_pick = 4
-
-    if held_keys['left mouse'] or held_keys['right mouse']:
-        hand.active()
-    else:
-        hand.passive()
-
-    if coord_display.enabled:
-        # 保留2位小数，坐标更整洁
-        x = round(player.x, 2)
-        y = round(player.y, 2)
-        z = round(player.z, 2)
-        coord_display.text = f"X: {x} Y: {y} Z: {z}"
-
-# 方块类
-class Block(Button):
-    def __init__(self, position=(0,0,0),texture=grass_texture):
-        super().__init__(
-            parent = scene,
-            position = position,
-            model = 'assets/models/block',
-            origin_y = 0.5,
-            texture = texture,
-            color = color.white,
-            highlight_color = color.hsv(0,0,0.9),
-            scale = 0.5
-        )
-
-    def input(self, key):
-        if self.hovered:
-            if key == 'left mouse button':
-                punch_sound.play()
-                if block_pick == 1:block = Block(position=self.position + mouse.normal,texture=grass_texture)
-                if block_pick == 2: block = Block(position=self.position + mouse.normal, texture=stone_texture)
-                if block_pick == 3: block = Block(position=self.position + mouse.normal, texture=dirt_texture)
-                if block_pick == 4: block = Block(position=self.position + mouse.normal, texture=bedrock_texture)
-            elif key == 'right mouse button':
-                punch_sound.play()
-                destroy(self)
-
-# 手部类
-class Hand(Entity):
+class BlockWorld:
     def __init__(self):
-        super().__init__(
-            parent=camera.ui,
-            model='assets/models/arm',
-            texture=arm_texture,
-            scale=0.2,
-            rotation=Vec3(150, -10, 0),
-            position=Vec2(0.4, -0.6)
+        self.blocks = {}  # (x,y,z) -> {"type": int}
+        self.noise = PerlinNoise(octaves=4, seed=int(random.uniform(0,10000)))
+        self.generate_chunk()
+
+    def generate_chunk(self):
+        for z in range(CHUNK_SIZE):
+            for x in range(CHUNK_SIZE):
+                y = int(self.noise([x/24, z/24]) * 8)
+                self.blocks[(x, y, z)] = {"type": 0}  # grass
+                for d in range(-2, y):
+                    self.blocks[(x, d, z)] = {"type": 2}  # dirt
+
+    def get_block_at(self, pos):
+        return self.blocks.get(tuple(pos))
+
+    def add_block(self, pos, block_type):
+        self.blocks[tuple(pos)] = {"type": block_type}
+
+    def remove_block(self, pos):
+        self.blocks.pop(tuple(pos), None)
+
+    def blocks_in_frustum(self, cam_pos, max_dist=40):
+        # Simple distance filter, no true frustum
+        return [
+            (pos, info["type"])
+            for pos, info in self.blocks.items()
+            if np.linalg.norm(np.array(pos) - cam_pos) < max_dist
+        ]
+
+class PauseMenu:
+    def __init__(self):
+        self.visible = False
+        self.label = pyglet.text.Label(
+            "Pause Menu\n[Esc] Continue | [Q] Quit",
+            font_size=28,
+            color=(255,255,255,255),
+            x=WINDOW_SIZE[0]//2, y=WINDOW_SIZE[1]//2,
+            anchor_x="center", anchor_y="center"
         )
+    def draw(self):
+        if self.visible:
+            gl.glDisable(gl.GL_DEPTH_TEST)
+            self.label.draw()
+            gl.glEnable(gl.GL_DEPTH_TEST)
 
-    def active(self):
-        self.position = Vec2(0.3, -0.6)
+class Player:
+    def __init__(self, spawn=(8, 10, 8)):
+        self.cam = Camera(list(spawn), pitch=0.0, yaw=0.0)
+        self.velocity = np.array([0,0,0],dtype="float32")
+        self.on_ground = False
+    def move(self, direction, dt):
+        self.cam.pos += direction * self.cam.speed * dt
 
-    def passive(self):
-        self.position = Vec2(0.4, -0.6)
+# --------- OpenGL helpers ------------
+def draw_cube(x, y, z, block_type):
+    color = BLOCK_TYPES[block_type]["color"]
+    vertices = [
+        # Front
+        x+0, y+0, z+1,  x+1, y+0, z+1,  x+1, y+1, z+1,  x+0, y+1, z+1,
+        # Back
+        x+0, y+0, z+0,  x+1, y+0, z+0,  x+1, y+1, z+0,  x+0, y+1, z+0,
+    ]
+    faces = [
+        (0,1,2,3), # Front
+        (4,5,6,7), # Back
+        (3,2,6,7), # Top
+        (0,1,5,4), # Bottom
+        (1,2,6,5), # Right
+        (0,3,7,4), # Left
+    ]
+    verts = []
+    for face in faces:
+        for idx in face:
+            verts.extend(vertices[idx*3:idx*3+3])
+    pyglet.graphics.draw(len(verts)//3, gl.GL_QUADS,
+        ('v3f/static', verts),
+        ('c3f/static', color * (len(verts)//3))
+    )
 
-# 地形生成
-noise = PerlinNoise(octaves=random.uniform(2,5),seed=random.uniform(0,99999))
-scale = random.uniform(24,32)
+# --------- Main App ------------
+class ExploreBuildApp(pyglet.window.Window):
+    def __init__(self):
+        super().__init__(width=WINDOW_SIZE[0], height=WINDOW_SIZE[1], caption="Explorebuild Pyglet2 3D", resizable=True)
+        self.set_exclusive_mouse(True)  # 捕获鼠标
+        self.world = BlockWorld()
+        self.player = Player()
+        self.pause_menu = PauseMenu()
+        self.block_pick = 0  # 当前选中的方块类型
+        self.coord_label = pyglet.text.Label("", x=10, y=self.height-30, font_size=14, batch=None)
+        self.show_coords = False
+        self.fps_display = pyglet.window.FPSDisplay(self)
+        self.keys = set()
+        self.paused = False
 
-for z in range(32):
-    for x in range(32):
-        y = floor(perturb_perlin_value(noise([x/scale,z/scale]),random.uniform(0,0.1))*random.uniform(7,9))
-        block = Block(position=(x,y,z))
+    def on_draw(self):
+        self.clear()
+        gl.glEnable(gl.GL_DEPTH_TEST)
+        self.setup_3d()
+        cam = self.player.cam
+        # 坐标与视角
+        gl.glLoadIdentity()
+        gl.gluLookAt(
+            cam.pos[0], cam.pos[1], cam.pos[2],
+            cam.pos[0]+cam.get_direction()[0], cam.pos[1]+cam.get_direction()[1], cam.pos[2]+cam.get_direction()[2],
+            0, 1, 0
+        )
+        # 绘制方块
+        for (pos, typ) in self.world.blocks_in_frustum(cam.pos):
+            draw_cube(*pos, typ)
+        gl.glDisable(gl.GL_DEPTH_TEST)
+        if self.show_coords:
+            self.coord_label.text = f"X:{cam.pos[0]:.2f} Y:{cam.pos[1]:.2f} Z:{cam.pos[2]:.2f}"
+            self.coord_label.draw()
+        self.fps_display.draw()
+        self.pause_menu.draw()
 
-        for i in range(-2,y):
-            block = Block(position=(x, i, z),texture=dirt_texture)
+    def setup_3d(self):
+        gl.glMatrixMode(gl.GL_PROJECTION)
+        gl.glLoadIdentity()
+        gl.gluPerspective(70, self.width/self.height, 0.1, 1000)
+        gl.glMatrixMode(gl.GL_MODELVIEW)
 
-# 暂停菜单（改用英文）
-pause_menu = Entity(
-    parent=camera.ui,
-    enabled=False,
-    z=0
-)
+    def on_mouse_motion(self, x, y, dx, dy):
+        if self.paused: return
+        self.player.cam.yaw += dx * self.player.cam.sensitivity
+        self.player.cam.pitch -= dy * self.player.cam.sensitivity
+        self.player.cam.pitch = max(-89, min(89, self.player.cam.pitch))
 
-menu_background = Entity(
-    parent=pause_menu,
-    model='quad',
-    color=color.black50,
-    scale=Vec2(2, 2),
-    z=1
-)
+    def on_key_press(self, symbol, modifiers):
+        if symbol == key.ESCAPE:
+            self.paused = not self.paused
+            self.pause_menu.visible = self.paused
+            self.set_exclusive_mouse(not self.paused)
+        if self.paused:
+            if symbol == key.Q:  # quit
+                self.close()
+            if symbol == key.ESCAPE:
+                self.paused = False
+                self.pause_menu.visible = False
+                self.set_exclusive_mouse(True)
+            return
+        # 方块切换
+        if symbol in (key._1, key._2, key._3, key._4):
+            self.block_pick = symbol - key._1
+        if symbol == key.F3:
+            self.show_coords = not self.show_coords
+        # 可添加更多快捷键
 
-menu_title = Text(
-    text='Pause Menu',  # 英文标题
-    parent=pause_menu,
-    position=(0, 0.2),
-    color=color.white,
-    scale=3,
-    z=0
-)
+    def on_mouse_press(self, x, y, button, modifiers):
+        if self.paused: return
+        # 射线检测: 获取玩家视角方向前方最靠近的方块
+        cam = self.player.cam
+        cam_pos = np.copy(cam.pos)
+        look_dir = cam.get_direction()
+        for step in np.linspace(0, 12, 50):
+            probe = cam_pos + look_dir * step
+            hit = self.world.get_block_at(tuple(map(int, probe)))
+            if hit:
+                if button == mouse.RIGHT:
+                    self.world.remove_block(tuple(map(int, probe)))
+                elif button == mouse.LEFT:
+                    # 在碰撞面前再生一个方块
+                    face_pos = tuple(map(int, probe + look_dir * 0.5))
+                    self.world.add_block(face_pos, self.block_pick)
+                break
 
-continue_button = Button(
-    text='Continue',  # 英文继续
-    parent=pause_menu,
-    position=(0, 0),
-    color=color.green,
-    text_color=color.white,
-    scale=0.2,
-    z=0,
-    on_click=lambda: toggle_pause(False)
-)
+    def on_text_motion(self, motion):
+        # 空格跳跃
+        if motion == key.MOTION_UP and self.player.on_ground:
+            self.player.velocity[1] = 0.16
 
-quit_button = Button(
-    text='Quit',  # 英文退出
-    parent=pause_menu,
-    position=(0, -0.2),
-    color=color.red,
-    text_color=color.white,
-    scale=0.2,
-    z=0,
-    on_click=application.quit
-)
+    def update(self, dt):
+        if self.paused: return
+        cam = self.player.cam
+        move_dir = np.array([0,0,0],dtype="float32")
+        if key.W in self.keys:
+            move_dir += cam.get_direction()
+        if key.S in self.keys:
+            move_dir -= cam.get_direction()
+        if key.A in self.keys:
+            # 左向
+            left = np.cross(cam.get_direction(), [0,1,0])
+            move_dir += left
+        if key.D in self.keys:
+            # 右向
+            right = np.cross([0,1,0], cam.get_direction())
+            move_dir += right
+        if key.SPACE in self.keys:
+            if self.player.on_ground:
+                self.player.velocity[1] = 0.16
+        # 更新位置
+        self.player.move(move_dir, dt)
+        # 跳跃&重力
+        self.player.cam.pos[1] += self.player.velocity[1]
+        self.player.velocity[1] -= 0.008
+        if self.player.cam.pos[1] <= 5:
+            self.player.cam.pos[1] = 5
+            self.player.velocity[1] = 0
+            self.player.on_ground = True
+        else:
+            self.player.on_ground = False
 
-# 玩家/场景初始化
-player = FirstPersonController()
-mouse.locked = True
-mouse.visible = False
-sky = Sky()
-hand = Hand()
+    def on_key_release(self, symbol, modifiers):
+        if symbol in (key.W, key.A, key.S, key.D, key.SPACE):
+            self.keys.discard(symbol)
 
-app.run()
+    def on_key_press_continuous(self, symbol, modifiers):
+        if symbol in (key.W, key.A, key.S, key.D, key.SPACE):
+            self.keys.add(symbol)
+
+    def on_resize(self, width, height):
+        self.coord_label.y = height - 30
+
+def main():
+    app = ExploreBuildApp()
+    pyglet.clock.schedule_interval(app.update, 1/60)
+    # 持续检测按键持有
+    @app.event
+    def on_key_press(symbol, modifiers):
+        app.on_key_press_continuous(symbol, modifiers)
+        app.on_key_press(symbol, modifiers)
+    @app.event
+    def on_key_release(symbol, modifiers):
+        app.on_key_release(symbol, modifiers)
+    app.run()
+
+if __name__ == "__main__":
+    main()
