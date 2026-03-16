@@ -19,5 +19,5 @@ A Minecraft-style sandbox game implemented in Python, featuring Faithful 64x tex
 ## Install dependencies
 https://www.python.org/ftp/python/3.13.12/python-3.13.12-amd64.exe
 ```shell
-python -m pip install ursina perlin-noise numpy
+python -m pip install pyglet perlin-noise numpy
 ```
