@@ -16,8 +16,11 @@ A Minecraft-style sandbox game implemented in Python, featuring Faithful 64x tex
   - Player-object interactions  
   - Mob AI and behavior logic  
   - Enhanced map generation and performance tuning
-## Install dependencies
-https://www.python.org/ftp/python/3.13.12/python-3.13.12-amd64.exe
+## Set up the development environment
+### Install dependencies
+[Download Python](https://www.python.org/ftp/python/3.13.12/python-3.13.12-amd64.exe)
+
+Run the following command to install the support library
 ```shell
 python -m pip install pyglet perlin-noise numpy
 ```
