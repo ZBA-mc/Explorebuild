@@ -245,38 +245,42 @@
 <body>
     <header>
         <div class="container">
-            <h1>Explorebuild</h1>
-            <p class="subtitle">A Minecraft-style sandbox game implemented in Python, featuring Faithful 64x texture support.</p>
+            <div style="position: absolute; top: 20px; right: 20px; display: flex; gap: 10px;">
+                <a href="https://github.com/ZBA-mc/Explorebuild/" class="download-link" style="padding: 0.5rem 1rem; font-size: 0.9rem;" target="_blank">GitHub</a>
+                <button id="language-toggle" class="download-link" style="padding: 0.5rem 1rem; font-size: 0.9rem;">简体中文</button>
+            </div>
+            <h1 id="title">Explorebuild</h1>
+            <p class="subtitle" id="subtitle">A Minecraft-style sandbox game implemented in Python, featuring Faithful 64x texture support.</p>
         </div>
     </header>
 
     <section class="features">
         <div class="container">
-            <h2 class="section-title">Implemented Features</h2>
+            <h2 class="section-title" id="implemented-features">Implemented Features</h2>
             <div class="features-grid">
                 <div class="feature-card">
-                    <h3>Movement & Perspective</h3>
-                    <p>WASD Movement for smooth first-person navigation and immersive view with mouse look controls.</p>
+                    <h3 id="movement-perspective">Movement & Perspective</h3>
+                    <p id="movement-perspective-desc">WASD Movement for smooth first-person navigation and immersive view with mouse look controls.</p>
                 </div>
                 <div class="feature-card">
-                    <h3>Terrain Generation</h3>
-                    <p>Procedurally generated landscapes for endless exploration with chunk-based map system.</p>
+                    <h3 id="terrain-generation">Terrain Generation</h3>
+                    <p id="terrain-generation-desc">Procedurally generated landscapes for endless exploration with chunk-based map system.</p>
                 </div>
                 <div class="feature-card">
-                    <h3>Block Interactions</h3>
-                    <p>Multiple block types to collect and place, with left-click placement and right-click destruction.</p>
+                    <h3 id="block-interactions">Block Interactions</h3>
+                    <p id="block-interactions-desc">Multiple block types to collect and place, with left-click placement and right-click destruction.</p>
                 </div>
                 <div class="feature-card">
-                    <h3>Game Mechanics</h3>
-                    <p>Space jump for parkour-like movement and ESC pause menu for settings or quitting the game.</p>
+                    <h3 id="game-mechanics">Game Mechanics</h3>
+                    <p id="game-mechanics-desc">Space jump for parkour-like movement and ESC pause menu for settings or quitting the game.</p>
                 </div>
                 <div class="feature-card">
-                    <h3>Block Selection</h3>
-                    <p>Switch between block types with number keys, with hand visualization showing the active block.</p>
+                    <h3 id="block-selection">Block Selection</h3>
+                    <p id="block-selection-desc">Switch between block types with number keys, with hand visualization showing the active block.</p>
                 </div>
                 <div class="feature-card">
-                    <h3>Performance</h3>
-                    <p>Efficient 4×4 chunk (32×32 block) rendering system for optimal performance.</p>
+                    <h3 id="performance">Performance</h3>
+                    <p id="performance-desc">Efficient 4×4 chunk (32×32 block) rendering system for optimal performance.</p>
                 </div>
             </div>
         </div>
@@ -284,23 +288,23 @@
 
     <section class="features">
         <div class="container">
-            <h2 class="section-title">Planned Optimization Targets</h2>
+            <h2 class="section-title" id="planned-features">Planned Optimization Targets</h2>
             <div class="features-grid">
                 <div class="feature-card">
-                    <h3>Inventory System</h3>
-                    <p>Backpack UI for managing collected items and resources.</p>
+                    <h3 id="inventory-system">Inventory System</h3>
+                    <p id="inventory-system-desc">Backpack UI for managing collected items and resources.</p>
                 </div>
                 <div class="feature-card">
-                    <h3>Player Interactions</h3>
-                    <p>Enhanced interactions with objects and the environment.</p>
+                    <h3 id="player-interactions">Player Interactions</h3>
+                    <p id="player-interactions-desc">Enhanced interactions with objects and the environment.</p>
                 </div>
                 <div class="feature-card">
-                    <h3>Mob AI</h3>
-                    <p>Intelligent behavior logic for in-game creatures.</p>
+                    <h3 id="mob-ai">Mob AI</h3>
+                    <p id="mob-ai-desc">Intelligent behavior logic for in-game creatures.</p>
                 </div>
                 <div class="feature-card">
-                    <h3>Map Generation</h3>
-                    <p>Enhanced terrain generation and performance tuning.</p>
+                    <h3 id="map-generation">Map Generation</h3>
+                    <p id="map-generation-desc">Enhanced terrain generation and performance tuning.</p>
                 </div>
             </div>
         </div>
@@ -308,20 +312,20 @@
 
     <section class="installation">
         <div class="container">
-            <h2 class="section-title">Install Dependencies</h2>
+            <h2 class="section-title" id="install-dependencies">Install Dependencies</h2>
             <div class="install-steps">
                 <div class="install-step">
-                    <h3>1. Install Python</h3>
-                    <a href="https://www.python.org/ftp/python/3.13.12/python-3.13.12-amd64.exe" class="download-link" target="_blank">Download Python 3.13.12</a>
+                    <h3 id="install-python">1. Install Python</h3>
+                    <a href="https://www.python.org/ftp/python/3.13.12/python-3.13.12-amd64.exe" class="download-link" target="_blank" id="download-python">Download Python 3.13.12</a>
                 </div>
                 <div class="install-step">
-                    <h3>2. Install Required Packages</h3>
+                    <h3 id="install-packages">2. Install Required Packages</h3>
                     <div class="code-block">python -m pip install pyglet perlin-noise numpy</div>
                 </div>
                 <div class="install-step">
-                    <h3>3. Download Game Files</h3>
-                    <a href="https://github.com/ZBA-mc/Explorebuild/raw/main/main.py" class="download-link" target="_blank">Download main.py</a>
-                    <a href="https://github.com/ZBA-mc/Explorebuild/raw/main/assets.zip" class="download-link" style="margin-left: 1rem;" target="_blank">Download assets.zip</a>
+                    <h3 id="download-files">3. Download Game Files</h3>
+                    <a href="https://github.com/ZBA-mc/Explorebuild/raw/main/main.py" class="download-link" target="_blank" id="download-main">Download main.py</a>
+                    <a href="https://github.com/ZBA-mc/Explorebuild/raw/main/assets.zip" class="download-link" style="margin-left: 1rem;" target="_blank" id="download-assets">Download assets.zip</a>
                 </div>
             </div>
         </div>
@@ -329,8 +333,92 @@
 
     <footer>
         <div class="container">
-            <p>&copy; 2026 Explorebuild. All rights reserved.</p>
+            <p id="footer-text">&copy; 2026 Explorebuild. All rights reserved.</p>
         </div>
     </footer>
+
+    <script>
+        // Language toggle functionality
+        const languageToggle = document.getElementById('language-toggle');
+        let isChinese = false;
+
+        languageToggle.addEventListener('click', function() {
+            isChinese = !isChinese;
+            
+            if (isChinese) {
+                // Switch to Chinese
+                languageToggle.textContent = 'English';
+                document.getElementById('title').textContent = '探索建造';
+                document.getElementById('subtitle').textContent = '一个用Python实现的Minecraft风格沙盒游戏，支持Faithful 64x纹理。';
+                document.getElementById('implemented-features').textContent = '已实现功能';
+                document.getElementById('movement-perspective').textContent = '移动与视角';
+                document.getElementById('movement-perspective-desc').textContent = 'WASD移动实现流畅的第一人称导航，鼠标控制视角，提供沉浸式体验。';
+                document.getElementById('terrain-generation').textContent = '地形生成';
+                document.getElementById('terrain-generation-desc').textContent = '程序化生成的景观，实现无限探索，采用区块式地图系统。';
+                document.getElementById('block-interactions').textContent = '方块交互';
+                document.getElementById('block-interactions-desc').textContent = '多种方块类型可收集和放置，左键放置，右键破坏。';
+                document.getElementById('game-mechanics').textContent = '游戏机制';
+                document.getElementById('game-mechanics-desc').textContent = '空格键跳跃实现跑酷式移动，ESC暂停菜单可访问设置或退出游戏。';
+                document.getElementById('block-selection').textContent = '方块选择';
+                document.getElementById('block-selection-desc').textContent = '使用数字键切换方块类型，手部可视化显示当前活跃方块。';
+                document.getElementById('performance').textContent = '性能优化';
+                document.getElementById('performance-desc').textContent = '高效的4×4区块（32×32方块）渲染系统，确保最佳性能。';
+                document.getElementById('planned-features').textContent = '计划优化目标';
+                document.getElementById('inventory-system').textContent = '背包系统';
+                document.getElementById('inventory-system-desc').textContent = '背包UI，用于管理收集的物品和资源。';
+                document.getElementById('player-interactions').textContent = '玩家交互';
+                document.getElementById('player-interactions-desc').textContent = '增强与物体和环境的交互。';
+                document.getElementById('mob-ai').textContent = '生物AI';
+                document.getElementById('mob-ai-desc').textContent = '游戏中生物的智能行为逻辑。';
+                document.getElementById('map-generation').textContent = '地图生成';
+                document.getElementById('map-generation-desc').textContent = '增强地形生成和性能调优。';
+                document.getElementById('install-dependencies').textContent = '安装方式';
+                document.getElementById('install-python').textContent = '1. 安装Python';
+                document.getElementById('download-python').textContent = '下载Python 3.13.12';
+                document.getElementById('install-packages').textContent = '2. 安装所需包';
+                document.getElementById('download-files').textContent = '3. 下载游戏文件';
+                document.getElementById('download-main').textContent = '下载 main.py';
+                document.getElementById('download-assets').textContent = '下载 assets.zip';
+                document.getElementById('footer-text').textContent = '© 2026 探索建造. 保留所有权利。';
+                document.title = '探索建造 - Minecraft风格沙盒游戏';
+            } else {
+                // Switch to English
+                languageToggle.textContent = '简体中文';
+                document.getElementById('title').textContent = 'Explorebuild';
+                document.getElementById('subtitle').textContent = 'A Minecraft-style sandbox game implemented in Python, featuring Faithful 64x texture support.';
+                document.getElementById('implemented-features').textContent = 'Implemented Features';
+                document.getElementById('movement-perspective').textContent = 'Movement & Perspective';
+                document.getElementById('movement-perspective-desc').textContent = 'WASD Movement for smooth first-person navigation and immersive view with mouse look controls.';
+                document.getElementById('terrain-generation').textContent = 'Terrain Generation';
+                document.getElementById('terrain-generation-desc').textContent = 'Procedurally generated landscapes for endless exploration with chunk-based map system.';
+                document.getElementById('block-interactions').textContent = 'Block Interactions';
+                document.getElementById('block-interactions-desc').textContent = 'Multiple block types to collect and place, with left-click placement and right-click destruction.';
+                document.getElementById('game-mechanics').textContent = 'Game Mechanics';
+                document.getElementById('game-mechanics-desc').textContent = 'Space jump for parkour-like movement and ESC pause menu for settings or quitting the game.';
+                document.getElementById('block-selection').textContent = 'Block Selection';
+                document.getElementById('block-selection-desc').textContent = 'Switch between block types with number keys, with hand visualization showing the active block.';
+                document.getElementById('performance').textContent = 'Performance';
+                document.getElementById('performance-desc').textContent = 'Efficient 4×4 chunk (32×32 block) rendering system for optimal performance.';
+                document.getElementById('planned-features').textContent = 'Planned Optimization Targets';
+                document.getElementById('inventory-system').textContent = 'Inventory System';
+                document.getElementById('inventory-system-desc').textContent = 'Backpack UI for managing collected items and resources.';
+                document.getElementById('player-interactions').textContent = 'Player Interactions';
+                document.getElementById('player-interactions-desc').textContent = 'Enhanced interactions with objects and the environment.';
+                document.getElementById('mob-ai').textContent = 'Mob AI';
+                document.getElementById('mob-ai-desc').textContent = 'Intelligent behavior logic for in-game creatures.';
+                document.getElementById('map-generation').textContent = 'Map Generation';
+                document.getElementById('map-generation-desc').textContent = 'Enhanced terrain generation and performance tuning.';
+                document.getElementById('install-dependencies').textContent = 'Install Dependencies';
+                document.getElementById('install-python').textContent = '1. Install Python';
+                document.getElementById('download-python').textContent = 'Download Python 3.13.12';
+                document.getElementById('install-packages').textContent = '2. Install Required Packages';
+                document.getElementById('download-files').textContent = '3. Download Game Files';
+                document.getElementById('download-main').textContent = 'Download main.py';
+                document.getElementById('download-assets').textContent = 'Download assets.zip';
+                document.getElementById('footer-text').textContent = '© 2026 Explorebuild. All rights reserved.';
+                document.title = 'Explorebuild - Minecraft-style sandbox game';
+            }
+        });
+    </script>
 </body>
 </html>
