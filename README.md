@@ -1,6 +1,9 @@
 # Explorebuild  
+
 A Minecraft-style sandbox game implemented in Python, featuring Faithful 64x texture support.
+
 ## Implemented Features:
+
   - WASD Movement: Smooth first-person navigation across the world.  
   - First-Person Perspective: Immersive view with mouse look controls.  
   - Random Terrain Generation: Procedurally generated landscapes for endless exploration.  
@@ -11,16 +14,24 @@ A Minecraft-style sandbox game implemented in Python, featuring Faithful 64x tex
   - Chunk-Based Map System: Efficient 4×4 chunk (32×32 block) rendering system.  
   - ESC Pause Menu: Access settings or quit the game via a pause menu.  
   - Block Selection (Number Keys): Switch between block types with number keys, with hand visualization showing the active block.
+
 ## Planned Optimization Targets:
+
   - Inventory system and backpack UI  
   - Player-object interactions  
   - Mob AI and behavior logic  
   - Enhanced map generation and performance tuning
-## Set up the development environment
-### Install dependencies
-[Download Python](https://www.python.org/ftp/python/3.13.12/python-3.13.12-amd64.exe)
 
-Run the following command to install the support library
+## Set up the development environment
+
+### How to install
+
+1.[Download Python](https://www.python.org/ftp/python/3.13.12/python-3.13.12-amd64.exe)
+
+2.Run the following command to install the support library
+
 ```shell
 python -m pip install pyglet perlin-noise numpy
 ```
+
+3.[Download all the resources](https://github.com/ZBA-mc/Explorebuild/archive/refs/heads/main.zip) and run main.py
